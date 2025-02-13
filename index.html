@@ -76,10 +76,10 @@ function changeDirection(event) {
   const keyPressed = event.keyCode;
 
   // Запрещаем разворот на 180 градусов
-  if (keyPressed === 37 && direction.x === 0) direction = { x: -1, y: 0 }; // Лево
-  if (keyPressed === 38 && direction.y === 0) direction = { x: 0, y: -1 }; // Вверх
-  if (keyPressed === 39 && direction.x === 0) direction = { x: 1, y: 0 };  // Право
-  if (keyPressed === 40 && direction.y === 0) direction = { x: 0, y: 1 };  // Вниз
+  if (keyPressed === 65 && direction.x === 0) direction = { x: -1, y: 0 }; // Лево
+  if (keyPressed === 87 && direction.y === 0) direction = { x: 0, y: -1 }; // Вверх
+  if (keyPressed === 68 && direction.x === 0) direction = { x: 1, y: 0 };  // Право
+  if (keyPressed === 83 && direction.y === 0) direction = { x: 0, y: 1 };  // Вниз
 }
 
 // Основной игровой цикл
