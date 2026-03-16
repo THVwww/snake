@@ -3,7 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Snake Game</title>
+  <title>Snakei</title>
+  <link rel="website icon" type="png"
+    href="snake.png">
   <link rel="stylesheet" href="styles.css">
 </head>
 <style>
@@ -26,7 +28,7 @@ body {
 }
 
 .game-container {
-  background-color: #ecf0f1;
+  background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
   padding: 20px;
   border-radius: 10px;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
@@ -49,12 +51,21 @@ p {
   font-size: 1rem;
   color: #7f8c8d;
 }
+
+h1 {
+  color: red;
+}
+.snakei {
+  width: 9%;
+  height: 9%;
+}
 </style>
 <body>
   <div class="game-container">
-    <h1>Snake Game</h1>
-    <canvas id="gameCanvas" width="400" height="400"></canvas>
-    <p>Use arrow keys to control the snake.</p>
+    <img class="snakei" src="snake.png" alt="snake">
+    <h1>Snakei</h1>
+    <canvas id="gameCanvas" width="700" height="400"></canvas>
+    <p>Use W A S D keys to control the Snakei.</p>
   </div>
   <script>
     // Получаем элемент canvas
@@ -63,7 +74,8 @@ const ctx = canvas.getContext('2d');
 
 // Настройки игры
 const gridSize = 20; // Размер одной клетки
-const tileCount = canvas.width / gridSize; // Количество клеток в сетке
+const tileCountX = canvas.width / gridSize; // Количество клеток в сетке
+const tileCountY = canvas.height / gridSize;
 let snake = [{ x: 10, y: 10 }]; // Начальная позиция змейки
 let food = { x: 5, y: 5 }; // Начальная позиция еды
 let direction = { x: 0, y: 0 }; // Направление движения змейки
@@ -95,7 +107,7 @@ function update() {
   const head = { x: snake[0].x + direction.x, y: snake[0].y + direction.y };
 
   // Проверка столкновений с границами
-  if (head.x < 0 || head.x >= tileCount || head.y < 0 || head.y >= tileCount) {
+  if (head.x < 0 || head.x >= tileCountX || head.y < 0 || head.y >= tileCountY) {
     resetGame();
     return;
   }
@@ -120,28 +132,117 @@ function update() {
 
 // Отрисовка игры
 function draw() {
-  // Очищаем поле
+  // 1. Очищаем экран
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  // Рисуем змейку
-  ctx.fillStyle = 'limegreen';
-  snake.forEach(segment => ctx.fillRect(segment.x * gridSize, segment.y * gridSize, gridSize, gridSize));
+  // --- РИСУЕМ ЗМЕЙКУ ---
+  snake.forEach((segment, index) => {
+    const isHead = index === 0;          // Это голова?
+    const isTail = index === snake.length - 1; // Это хвост?
 
-  // Рисуем еду
-  ctx.fillStyle = 'red';
-  ctx.fillRect(food.x * gridSize, food.y * gridSize, gridSize, gridSize);
+    // Координаты центра сегмента
+    const centerX = segment.x * gridSize + gridSize / 2;
+    const centerY = segment.y * gridSize + gridSize / 2;
 
-  // Отображаем счет
+    // 🎨 ЛОГИКА РАЗМЕРОВ И ЦВЕТА:
+    let radius;
+    let color;
+
+    if (isHead) {
+      // Голова: Чуть больше (14px вместо 12.5), цвет ярче
+      radius = gridSize / 2 + 2; 
+      color = '#4ade80'; // Светло-зеленый
+    } else if (isTail) {
+      // Хвост: Чуть меньше (10px), чтобы сужался
+      radius = gridSize / 2 - 3; 
+      color = '#22c55e'; // Темно-зеленый
+    } else {
+      // Тело: Обычный размер, но чуть больше клетки, чтобы сливалось
+      radius = gridSize / 2 + 1; 
+      color = '#32d74b'; // Средне-зеленый
+    }
+
+    // Рисуем круг тела
+    ctx.beginPath();
+    ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+    ctx.fillStyle = color;
+    ctx.fill();
+    ctx.closePath();
+
+    // 👁️ РИСУЕМ ГЛАЗА (ТОЛЬКО ДЛЯ ГОЛОВЫ)
+    if (isHead) {
+      ctx.fillStyle = 'white';
+      
+      // Определяем смещение глаз в зависимости от направления
+      let eyeOffsetX = 0;
+      let eyeOffsetY = 0;
+      
+      // Если змейка стоит, считаем что смотрит вправо
+      if (direction.x === 0 && direction.y === 0) {
+        eyeOffsetX = 4; 
+      } else if (direction.x === 1) { eyeOffsetX = 4; }   // Вправо
+      else if (direction.x === -1) { eyeOffsetX = -4; }   // Влево
+      else if (direction.y === 1) { eyeOffsetY = 4; }     // Вниз
+      else if (direction.y === -1) { eyeOffsetY = -4; }   // Вверх
+
+      // Координаты левого и правого глаза (относительно направления)
+      let leftEyeX, leftEyeY, rightEyeX, rightEyeY;
+
+      if (direction.x !== 0) { 
+        // Движение влево/вправо -> глаза сверху и снизу
+        leftEyeX = centerX + eyeOffsetX;
+        leftEyeY = centerY - 5;
+        rightEyeX = centerX + eyeOffsetX;
+        rightEyeY = centerY + 5;
+      } else { 
+        // Движение вверх/вниз -> глаза слева и справа
+        leftEyeX = centerX - 5;
+        leftEyeY = centerY + eyeOffsetY;
+        rightEyeX = centerX + 5;
+        rightEyeY = centerY + eyeOffsetY;
+      }
+
+      // Белки глаз
+      ctx.beginPath(); ctx.arc(leftEyeX, leftEyeY, 4, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.arc(rightEyeX, rightEyeY, 4, 0, Math.PI * 2); ctx.fill();
+
+      // Зрачки (черные)
+      ctx.fillStyle = 'black';
+      ctx.beginPath(); ctx.arc(leftEyeX + eyeOffsetX/2, leftEyeY + eyeOffsetY/2, 2, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.arc(rightEyeX + eyeOffsetX/2, rightEyeY + eyeOffsetY/2, 2, 0, Math.PI * 2); ctx.fill();
+    }
+  });
+
+  // --- РИСУЕМ ЕДУ (Красное яблоко) ---
+  const foodX = food.x * gridSize + gridSize / 2;
+  const foodY = food.y * gridSize + gridSize / 2;
+  
+  ctx.beginPath();
+  ctx.arc(foodX, foodY, gridSize / 2 - 2, 0, Math.PI * 2);
+  ctx.fillStyle = '#ff4757';
+  ctx.fill();
+  ctx.closePath();
+  
+  // Блик на еде
+  ctx.fillStyle = 'rgba(255,255,255,0.7)';
+  ctx.beginPath();
+  ctx.arc(foodX - 3, foodY - 3, 3, 0, Math.PI * 2);
+  ctx.fill();
+
+  // --- СЧЕТ ---
   ctx.fillStyle = 'white';
-  ctx.font = '20px Arial';
-  ctx.fillText(`Score: ${score}`, 10, 20);
+  ctx.font = 'bold 20px Arial';
+  ctx.shadowColor = 'black';
+  ctx.shadowBlur = 5;
+  ctx.fillText(`Score: ${score}`, 10, 30);
+  ctx.shadowBlur = 0;
 }
 
 // Размещение еды в случайной позиции
 function placeFood() {
   food = {
-    x: Math.floor(Math.random() * tileCount),
-    y: Math.floor(Math.random() * tileCount)
+    x: Math.floor(Math.random() * tileCountX),
+    y: Math.floor(Math.random() * tileCountY)
   };
 
   // Проверяем, чтобы еда не появилась на теле змейки
